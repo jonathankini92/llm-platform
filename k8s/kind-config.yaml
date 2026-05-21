@@ -1,0 +1,25 @@
+# =============================================================================
+# Kind Cluster Configuration
+# =============================================================================
+# Kind (Kubernetes IN Docker) runs a local K8s cluster using Docker containers.
+# This config customizes the cluster for our LLM platform.
+
+kind: Cluster
+apiVersion: kind.x-k8s.io/v1alpha4
+
+nodes:
+  # Single node cluster (control-plane + worker combined)
+  # For production, you'd have separate control-plane and worker nodes
+  - role: control-plane
+
+    # Port mappings: expose services on localhost
+    # This allows `curl localhost:30080` to reach services in the cluster
+    extraPortMappings:
+      # NodePort for the mock backend (for direct testing)
+      - containerPort: 30080
+        hostPort: 30080
+        protocol: TCP
+      # NodePort for the gateway (Milestone 3+)
+      - containerPort: 30000
+        hostPort: 8080
+        protocol: TCP

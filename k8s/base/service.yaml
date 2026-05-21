@@ -1,0 +1,27 @@
+# =============================================================================
+# Service: Mock Backend
+# =============================================================================
+# A Service provides a stable network endpoint to access pods.
+# Pods come and go, but the Service IP stays the same.
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: mock-backend
+  labels:
+    app: mock-backend
+spec:
+  # NodePort exposes the service on each node's IP at a static port
+  # This allows external access via localhost:30080
+  type: NodePort
+
+  # Route traffic to pods with this label
+  selector:
+    app: mock-backend
+
+  ports:
+    - name: http
+      port: 80            # Service port (internal)
+      targetPort: 8000    # Container port
+      nodePort: 30080     # External port (localhost:30080)
+      protocol: TCP

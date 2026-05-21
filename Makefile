@@ -1,5 +1,5 @@
 .DEFAULT_GOAL := help
-.PHONY: help up down build test lint clean cluster deploy port-forward
+.PHONY: help up down build test lint clean cluster build-k8s deploy port-forward logs
 
 ## help: show this help
 help:
@@ -29,19 +29,29 @@ test:
 lint:
 	ruff check .
 
-# --- Milestone 2+: kubernetes ---
+# --- Milestone 2: kubernetes ---
 
 ## cluster: create a local kind cluster
 cluster:
 	kind create cluster --name llm-platform --config k8s/kind-config.yaml
 
-## deploy: deploy to the local cluster
-deploy:
-	kubectl apply -k k8s/overlays/local
+## build-k8s: build and load image into kind
+build-k8s:
+	docker build -t mock-backend:latest ./backends/mock
+	kind load docker-image mock-backend:latest --name llm-platform
 
-## port-forward: expose the gateway locally
+## deploy: build image and deploy to the local cluster
+deploy: build-k8s
+	kubectl apply -k k8s/overlays/local
+	kubectl rollout status deployment/mock-backend
+
+## port-forward: expose the mock backend locally
 port-forward:
-	kubectl port-forward svc/gateway 8080:80
+	kubectl port-forward svc/mock-backend 8080:80
+
+## logs: show mock backend logs
+logs:
+	kubectl logs -l app=mock-backend -f
 
 ## clean: delete the local cluster
 clean:

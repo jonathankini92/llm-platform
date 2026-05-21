@@ -1,0 +1,66 @@
+# =============================================================================
+# Deployment: Mock Backend
+# =============================================================================
+# A Deployment manages a set of identical pods (replicas).
+# It handles rolling updates, scaling, and self-healing.
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mock-backend
+  labels:
+    app: mock-backend
+spec:
+  # Number of pod replicas to run
+  replicas: 2
+
+  # How to find pods managed by this deployment
+  selector:
+    matchLabels:
+      app: mock-backend
+
+  template:
+    metadata:
+      labels:
+        app: mock-backend
+    spec:
+      containers:
+        - name: mock-backend
+          # Image will be built and loaded into kind
+          image: mock-backend:latest
+          # Never pull from registry (we load locally)
+          imagePullPolicy: Never
+
+          ports:
+            - containerPort: 8000
+              name: http
+
+          # Environment variables (if needed)
+          env:
+            - name: LOG_LEVEL
+              value: "info"
+
+          # Resource limits (important for production)
+          resources:
+            requests:
+              memory: "64Mi"
+              cpu: "100m"
+            limits:
+              memory: "128Mi"
+              cpu: "200m"
+
+          # Liveness probe: restart pod if unhealthy
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: 8000
+            initialDelaySeconds: 5
+            periodSeconds: 10
+
+          # Readiness probe: don't send traffic until ready
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: 8000
+            initialDelaySeconds: 3
+            periodSeconds: 5

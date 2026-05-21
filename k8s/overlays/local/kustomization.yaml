@@ -1,0 +1,26 @@
+# =============================================================================
+# Kustomize: Local Overlay
+# =============================================================================
+# This overlay customizes the base for local development.
+# You could add staging/prod overlays with different settings.
+
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+# Reference the base configuration
+resources:
+  - ../../base
+
+# Add a name prefix for local environment (optional)
+# namePrefix: local-
+
+# Patches specific to local environment
+patches:
+  # Reduce replicas for local development (save resources)
+  - patch: |-
+      - op: replace
+        path: /spec/replicas
+        value: 1
+    target:
+      kind: Deployment
+      name: mock-backend

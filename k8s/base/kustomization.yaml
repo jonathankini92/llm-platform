@@ -1,0 +1,18 @@
+# =============================================================================
+# Kustomize: Base Configuration
+# =============================================================================
+# Kustomize lets you customize K8s manifests without modifying originals.
+# This base layer contains the common resources.
+# Overlays (local, staging, prod) can patch these as needed.
+
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+# Resources to include
+resources:
+  - deployment.yaml
+  - service.yaml
+
+# Common labels applied to all resources
+commonLabels:
+  project: llm-platform
