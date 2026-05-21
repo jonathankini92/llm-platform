@@ -1,0 +1,16 @@
+# Dépendances du Mock Backend
+#
+# FastAPI : framework web moderne et rapide pour APIs
+# - Validation automatique avec Pydantic
+# - Documentation auto-générée (Swagger UI)
+# - Support async natif
+fastapi==0.110.0
+
+# Uvicorn : serveur ASGI pour exécuter FastAPI
+# - ASGI = Asynchronous Server Gateway Interface
+# - Performant et léger
+uvicorn[standard]==0.27.1
+
+# Pydantic : validation de données
+# - Inclus avec FastAPI mais on le spécifie explicitement
+pydantic==2.6.1

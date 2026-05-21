@@ -1,0 +1,63 @@
+# =============================================================================
+# Docker Compose - Local Orchestration
+# =============================================================================
+# This file defines all the services that make up our platform.
+# `docker compose up` starts everything at once.
+#
+# For now we only have the mock backend.
+# Later we will add: gateway, prometheus, grafana...
+
+version: "3.9"
+
+services:
+  # ---------------------------------------------------------------------------
+  # MOCK BACKEND
+  # ---------------------------------------------------------------------------
+  # Simulated inference service - responds to requests like a real LLM
+  mock-backend:
+    # Build the image from the Dockerfile in backends/mock/
+    build:
+      context: ./backends/mock
+      dockerfile: Dockerfile
+
+    # Container name (easier to identify in `docker ps`)
+    container_name: llm-mock-backend
+
+    # Port mapping: host:container
+    # localhost:8001 → container:8000
+    # We use 8001 to leave 8000 free for the gateway later
+    ports:
+      - "8001:8000"
+
+    # Automatically restart if the container crashes
+    restart: unless-stopped
+
+    # Health check - Docker verifies the service is working
+    # If /healthz doesn't respond, Docker marks the container as "unhealthy"
+    # We use python because curl is not in the slim image
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/healthz')"]
+      interval: 30s      # Check every 30 seconds
+      timeout: 10s       # Timeout after 10 seconds
+      retries: 3         # 3 failures = unhealthy
+      start_period: 10s  # Wait 10s before the first check
+
+# =============================================================================
+# NEXT STEPS (Milestone 2+)
+# =============================================================================
+# We will add here:
+#
+#   gateway:
+#     build: ./gateway
+#     ports:
+#       - "8000:8000"
+#     depends_on:
+#       - mock-backend
+#
+#   prometheus:
+#     image: prom/prometheus
+#     ...
+#
+#   grafana:
+#     image: grafana/grafana
+#     ...
