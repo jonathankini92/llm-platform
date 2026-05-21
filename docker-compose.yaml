@@ -42,17 +42,48 @@ services:
       retries: 3         # 3 failures = unhealthy
       start_period: 10s  # Wait 10s before the first check
 
+  # ---------------------------------------------------------------------------
+  # API GATEWAY
+  # ---------------------------------------------------------------------------
+  # Single entry point for all backends - handles routing, auth, rate limiting
+  gateway:
+    build:
+      context: ./gateway
+      dockerfile: Dockerfile
+
+    container_name: llm-gateway
+
+    # Gateway is the main entry point on port 8000
+    ports:
+      - "8000:8000"
+
+    # Environment variables for configuration
+    environment:
+      # Comma-separated list of valid API keys
+      - API_KEYS=sk-test-key-1,sk-test-key-2
+      # Rate limit: requests per minute per API key
+      - RATE_LIMIT_RPM=60
+      # Backend URL (Docker network uses service name)
+      - BACKEND_MOCK_URL=http://mock-backend:8000
+
+    # Wait for backend to be ready
+    depends_on:
+      mock-backend:
+        condition: service_healthy
+
+    restart: unless-stopped
+
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/healthz')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
 # =============================================================================
-# NEXT STEPS (Milestone 2+)
+# NEXT STEPS (Milestone 4+)
 # =============================================================================
-# We will add here:
-#
-#   gateway:
-#     build: ./gateway
-#     ports:
-#       - "8000:8000"
-#     depends_on:
-#       - mock-backend
+# We will add:
 #
 #   prometheus:
 #     image: prom/prometheus
